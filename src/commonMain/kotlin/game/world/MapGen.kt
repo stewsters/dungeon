@@ -6,6 +6,7 @@ import game.ai.PlayerAI
 import math.Matrix2d
 import math.Rect
 import math.Vec2
+import tileSize
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.random.Random
@@ -55,7 +56,7 @@ suspend fun generateMap(): World {
         if (rooms.size == 0) {
             //set player start
             player.pos = center
-            player.sprite.xy(center.x, center.y)
+            player.sprite.xy(center.x * tileSize, center.y * tileSize)
         } else {
             //TODO: add objects
             //placeObjects(map, newRoom,  MAX_ROOM_MONSTERS, MAX_ROOM_ITEMS)
