@@ -20,16 +20,10 @@ class WalkToPoint(
             return Succeeded
 
         if (getManhattanDistance(destination, entity.pos) <= 1) {
-            val meleeTargets = world.entities.filter {
-                it.pos == destination && it.isAlive() && it.player != entity.player
-            }
-            if (meleeTargets.isNotEmpty()) {
-                return Melee(meleeTargets.first()).onPerform(world, entity)
-            }
+            return Walk(destination-entity.pos).onPerform(world,entity)
         }
 
-//        val start = System.currentTimeMillis()
-        // path to point
+        // if not adjacent, path to point
         val path = findPath2d(
                 size = world.tiles.getSize(),
                 cost = { 1.0 },
@@ -49,39 +43,9 @@ class WalkToPoint(
         if (path == null || path.size < 2)
             return Failed
 
-        val next = world.tiles[path[1]]
-        val entitiesOnNextTile = world.entities.filter { it.pos == path[1] }
+        val offset = path[1] - entity.pos
 
-        if (next.isBlocked() || entitiesOnNextTile.any { it.isAlive() }) {
-            return Failed
-        }
-
-
-        // world.move(entity, path[1])
-
-        val meleeTargets = entitiesOnNextTile.filter {
-            it.isAlive() && it.player != entity.player
-        }
-        if (meleeTargets.isNotEmpty()) {
-            return Melee(meleeTargets.first()).onPerform(world, entity)
-        }
-
-// TODO: add looting
-//        // get next step, go there
-//        if (entitiesOnNextTile.any { !it.isAlive() }) {
-//            // Free loot pickup
-//            return Loot().onPerform(world, entity)
-//            //return Alternative(Loot())
-//        }
-
-        entity.pos = path[1]
-
-        // if standing on loot box, loot next turn
-        if (entity.pos == destination)
-            return Succeeded
-        else
-            return InProgress
-
+        return Walk(offset).onPerform(world,entity)
     }
 
 }

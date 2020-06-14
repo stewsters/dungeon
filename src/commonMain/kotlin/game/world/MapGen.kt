@@ -27,7 +27,7 @@ fun coinFlip() = Random.nextBoolean()
 
 fun generateMap(): World {
 
-    val player = Entity(Vec2(7, 7), CritterType.KNIGHT, PlayerAI(), player = true, blocks = true)
+    val player = Entity(Vec2(7, 7), CritterType.KNIGHT, PlayerAI(), player = true, blocks = true, stabber = true)
     val map = Matrix2d(64, 64) { x, y -> TileType.DIRT }
     val decor = Matrix2d<Decor?>(map.getSize()) { x, y -> null }
 

@@ -33,12 +33,31 @@ class Walk(val dir: Vec2) : Action {
             return Succeeded
         }
 
+        //        // get next step, go there
+//        if (entitiesOnNextTile.any { !it.isAlive() }) {
+//            // Free loot pickup
+//            return Loot().onPerform(world, entity)
+//            //return Alternative(Loot())
+//        }
+
+
         if (world.tiles[nextPos].isBlocked()) {
             //blocked
             return Failed
         }
 
         entity.pos = nextPos
+        if(entity.stabber){
+            val nextPos = entity.pos + dir
+            val entitiesOnNextSpace = world.entities.filter { it.pos == nextPos }
+            val meleeTargets = entitiesOnNextSpace.filter {
+                it.isAlive() && it.player != entity.player
+            }
+            if (meleeTargets.isNotEmpty()) {
+                return Melee(meleeTargets.first()).onPerform(world, entity)
+            }
+        }
+
         return Succeeded
     }
 }
