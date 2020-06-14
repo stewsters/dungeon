@@ -1,19 +1,24 @@
 package game.world
 
+import DrawCell2d
 import com.soywiz.korge.view.xy
 import game.ai.OpponentAI
 import game.ai.PlayerAI
+import mapgen.MapGen2d
+import mapgen.predicate.AndPredicate2d
+import mapgen.predicate.CellEquals2d
+import mapgen.predicate.CellNearCell2d
 import math.Matrix2d
-import math.Rect
 import math.Vec2
+import math.findPath2d
+import math.getEuclideanDistance
 import tileSize
-import kotlin.math.max
 import kotlin.math.min
 import kotlin.random.Random
 
 
-private val ROOM_MAX_SIZE = 12
-private val ROOM_MIN_SIZE = 6
+private val ROOM_MAX_SIZE = 6
+private val ROOM_MIN_SIZE = 3
 private val MAX_ROOMS = 20
 private val MAX_ROOM_MONSTERS = 2
 private val MAX_ROOM_ITEMS = 2
@@ -22,64 +27,110 @@ private val MAX_ROOM_ITEMS = 2
 fun d(max: Int) = (1..max).random()
 fun coinFlip() = Random.nextBoolean()
 
-suspend fun generateMap(): World {
+fun generateMap(): World {
 
     val player = Entity(Vec2(7, 7), CritterType.PLAYER, PlayerAI(), player = true)
-    val map = Matrix2d(64, 64) { x, y -> Cell(x, y, TileType.DIRT) }
+    val map = Matrix2d(64, 64) { x, y -> TileType.DIRT }
 
-    val rooms = mutableListOf<Rect>()
+    val roomCenters = mutableListOf<Vec2>()
     val entities = mutableListOf(player)
 
     (1..MAX_ROOMS).forEach {
         val w = (ROOM_MIN_SIZE..ROOM_MAX_SIZE).random()
         val h = (ROOM_MIN_SIZE..ROOM_MAX_SIZE).random()
 
-        val roomX = (0 until map.xSize - w).random()
-        val roomY = (0 until map.ySize - h).random()
+        val center = Vec2(
+                (w + 1 until map.xSize - w).random(),
+                (h + 1 until map.ySize - h).random()
+        )
 
-        val newRoom = Rect(roomX, roomY, w + roomX, h + roomY)
-        if (rooms.any { newRoom.intersect(it) })
-            return@forEach
-
-        when (d(10)) {
-            1 -> pillarRoom(
-                    map, newRoom, d(3) + 1,
-                    if (d(6) == 0) TileType.WATER_SHALLOW else TileType.WALL,
-                    TileType.FLOOR,
-                    if (coinFlip()) TileType.WATER_SHALLOW else null
-            )
-            2 -> digPool(map, newRoom, TileType.WATER_SHALLOW, TileType.WATER_DEEP)
-            else -> createRoom(map, newRoom)
+        if (digRoom(map, TileType.DIRT, TileType.FLOOR, center, w, h, TileType.WALL)) {
+            roomCenters.add(center)
         }
 
-        val center = newRoom.center()
-        if (rooms.size == 0) {
+    }
+
+    // set anything touching the rooms into a wall
+    MapGen2d.fill(map,
+            AndPredicate2d(arrayOf(
+                    CellEquals2d(TileType.DIRT),
+                    CellNearCell2d(TileType.FLOOR)
+            )),
+            DrawCell2d(TileType.WALL)
+    )
+
+    // Link them up.  Dig tunnels using a*
+    // anything that is a wall gets turned to a door
+
+
+    // Cutting paths
+    // Link them up.  Dig tunnels using a*
+    // anything that is a wall gets turned to a door
+
+    for (roomCenterFrom in roomCenters) {
+        for (roomCenterTo in roomCenters) {
+
+            val fullPath2d = findPath2d(
+                    size = map.getSize(),
+                    cost = { map[it].tunnelCost },
+                    heuristic = { one, two -> getEuclideanDistance(one, two) },
+                    neighbors = { our ->
+                        our.vonNeumanNeighborhood().filter { vec ->
+                            map.contains(vec)
+                        }
+                    },
+                    start = roomCenterFrom,
+                    end = roomCenterTo
+            )
+
+//            val fullPath2d: FullPath2d = pathFinder2d.findPath(hallwayMover2d, roomCenterFrom.x, roomCenterFrom.y, roomCenterTo.x, roomCenterTo.y)
+            if (fullPath2d != null) {
+                for (currentStep in fullPath2d) {
+                    val tile: TileType = map[currentStep]
+                    if (tile === TileType.WALL) {
+                        map[currentStep] = TileType.DOOR_CLOSED
+                    } else if (tile !== TileType.DOOR_CLOSED && tile !== TileType.DOOR_OPEN) {
+                        map[currentStep] = TileType.FLOOR
+                    }
+                }
+            }
+        }
+    }
+
+    // Gets rid of double doors
+    MapGen2d.fill(map,
+            AndPredicate2d(arrayOf(
+                    CellEquals2d(TileType.DOOR_CLOSED),
+                    CellNearCell2d(TileType.DOOR_CLOSED)
+            )),
+            DrawCell2d(TileType.FLOOR)
+    )
+
+    //surround any halls with wall
+    MapGen2d.fill(map,
+            AndPredicate2d(arrayOf(
+                    CellEquals2d(TileType.DIRT),
+                    CellNearCell2d(TileType.FLOOR)
+            )),
+            DrawCell2d(TileType.WALL)
+    )
+
+
+    // Fill rooms with monstrosities
+    roomCenters.forEachIndexed { index, center ->
+        if (index == 0) {
             //set player start
             player.pos = center
             player.sprite.xy(center.x * tileSize, center.y * tileSize)
         } else {
             //TODO: add objects
             //placeObjects(map, newRoom,  MAX_ROOM_MONSTERS, MAX_ROOM_ITEMS)
-
             entities += Entity(center, enemies().random(), OpponentAI())
-
-            val prev = rooms[(rooms.size - 1)].center()
-
-            if (coinFlip()) {
-                createHTunnel(map, prev.x, center.x, prev.y)
-                createVTunnel(map, prev.y, center.y, center.x)
-            } else {
-                createVTunnel(map, prev.y, center.y, prev.x)
-                createHTunnel(map, prev.x, center.x, center.y)
-            }
         }
-        rooms.add(newRoom)
     }
 
-    map.forEach { cell -> cell.rebuild() }
-
     return World(
-            tiles = map,
+            tiles = Matrix2d(map.getSize()) { x, y -> Cell(x, y, map[x, y]) },
             entities = entities,
             player = player
     )
@@ -87,97 +138,47 @@ suspend fun generateMap(): World {
 }
 
 
-/**
- * Paint a room onto the map's tiles
- * @return
- */
-private fun createRoom(map: Matrix2d<Cell>, room: Rect) {
-    ((room.x1)..(room.x2)).forEach { x ->
-        ((room.y1)..(room.y2)).forEach { y ->
-            map[x, y].tileType = if (room.onEdge(x, y))
-                TileType.WALL
-            else
-                TileType.FLOOR
-        }
-    }
-}
+fun digRoom(mapLevel: Matrix2d<TileType>, sourceType: TileType, destinationType: TileType, center: Vec2, xRadius: Int, yRadius: Int, column: TileType): Boolean {
+    val xMin: Int = center.x - xRadius
+    val xMax: Int = center.x + xRadius
+    val yMin: Int = center.y - yRadius
+    val yMax: Int = center.y + yRadius
+    return if (coinFlip() && coinFlip()) {
+        //circular room
+        val radius: Int = min(xRadius, yRadius)
 
-private fun createHTunnel(map: Matrix2d<Cell>, x1: Int, x2: Int, y: Int) {
-    (min(x1, x2)..max(x1, x2)).forEach { x ->
-
-        when (map[x, y].tileType) {
-            TileType.WALL -> {
-                map[x, y].tileType = TileType.DOOR_CLOSED
-            }
-            TileType.DIRT -> {
-                map[x, y].tileType = TileType.FLOOR
+        for (x in xMin - 2..xMax) {
+            for (y in yMin - 2..yMax) {
+                if (getEuclideanDistance(x.toDouble(), y.toDouble(), center.x.toDouble(), center.y.toDouble()) <= radius + 1 && mapLevel.get(x, y) !== sourceType)
+                    return false
             }
         }
-
-    }
-}
-
-private fun createVTunnel(map: Matrix2d<Cell>, y1: Int, y2: Int, x: Int) {
-    (min(y1, y2)..max(y1, y2)).forEach { y ->
-        when (map[x, y].tileType) {
-            TileType.WALL -> {
-                map[x, y].tileType = TileType.DOOR_CLOSED
-            }
-            TileType.DIRT -> {
-                map[x, y].tileType = TileType.FLOOR
+        for (x in xMin - 1..xMax) {
+            for (y in yMin - 1..yMax) {
+                if (getEuclideanDistance(x.toDouble(), y.toDouble(), center.x.toDouble(), center.y.toDouble()) <= radius)
+                    mapLevel[x, y] = destinationType
             }
         }
-    }
-}
+        true
+    } else {
 
-private fun digPool(map: Matrix2d<Cell>, room: Rect, shallow: TileType, deep: TileType) {
-
-    ((room.x1)..(room.x2)).forEach { x ->
-        ((room.y1)..(room.y2)).forEach { y ->
-            map[x, y].tileType =
-                    if (x == room.x1 || x == room.x2 || y == room.y1 || y == room.y2) {
-                        shallow
-                    } else {
-                        deep
-                    }
+        //TODO: pillars?  Larger rooms should have a higher pillar likelyhood?
+        val pillarsOnWalls: Boolean = coinFlip()
+        val vSpacing: Int = (3..5).random()
+        val hSpacing: Int = (3..5).random()
+        for (x in xMin..xMax) {
+            for (y in yMin..yMax) {
+                if (mapLevel[x, y] !== sourceType) return false
+            }
         }
-    }
-}
+        for (x in xMin until xMax) {
+            for (y in yMin until yMax) {
+                val hori = min(x - xMin, xMax - x - 1) % hSpacing == 1;
+                val vert = min(y - yMin, yMax - y - 1) % vSpacing == 1
 
-private fun pillarRoom(map: Matrix2d<Cell>, room: Rect, spacing: Int, column: TileType, floor: TileType, edge: TileType? = null) {
-    ((room.x1)..(room.x2)).forEach { x ->
-        ((room.y1)..(room.y2)).forEach { y ->
-
-            map[x, y].tileType =
-                    if (edge != null && (x == room.x1 || x == room.x2 || y == room.y1 || y == room.y2)) {
-                        edge
-                    } else {
-                        val center = room.center()
-
-
-                        val hori = if (x == center.x || (x % 2 == 1 && x == center.x + 1)) {
-                            false
-                        } else {
-                            if (x < center.x) {
-                                (x - room.x1) % spacing == 0
-                            } else {
-                                (room.x2 - x) % spacing == 0
-                            }
-                        }
-
-                        val vert = if (y == center.y || (y % 2 == 1 && y == center.y + 1)) {
-                            false
-                        } else {
-                            if (y < center.y) {
-                                (y - room.y1) % spacing == 0
-                            } else {
-                                (room.y2 - y) % spacing == 0
-                            }
-                        }
-
-                        if (vert && hori) column else floor
-
-                    }
+                mapLevel[x, y] = if (pillarsOnWalls && vert && hori) column else destinationType
+            }
         }
+        true
     }
 }

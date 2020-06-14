@@ -1,9 +1,11 @@
-# Korge Hello World and Template
+# Dungeon
 
-This is a Hello World and Template for the KorGe game engine. Using gradle with kotlin-dsl.
+This is a simple game about raiding a dungeon for loot.
+
+It was made as a part of the [1st KorGE Game JAM](https://itch.io/jam/korge-gamejam-1)
+The theme was classic, so I made a simplified roguelike.
+
 You can open this project in IntelliJ IDEA by opening the folder or the build.gradle.kts file.
-
-You can find this template at GitHub: <https://github.com/korlibs/korge-hello-world>
 
 For Windows, change all the `./gradlew` for `gradlew.bat`.
 

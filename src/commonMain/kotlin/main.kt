@@ -26,7 +26,7 @@ val west = Vec2(-1, 0)
 val south = Vec2(0, 1)
 
 suspend fun main() = Korge(width = tileSize * mapWidth, height = tileSize * mapHeight, bgcolor = Colors["#2b2b2b"]) {
-   // scale = 4.0
+    // scale = 4.0
     textureWork()
 
     val world = generateMap()
