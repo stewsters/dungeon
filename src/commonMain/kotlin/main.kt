@@ -8,12 +8,12 @@ import com.soywiz.korge.Korge
 import com.soywiz.korge.input.keys
 import com.soywiz.korge.view.SpriteAnimation
 import com.soywiz.korge.view.addFixedUpdater
-import com.soywiz.korge.view.camera
+import com.soywiz.korge.view.text
+import com.soywiz.korge.view.xy
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.format.readBitmap
 import com.soywiz.korio.file.std.resourcesVfs
 import com.soywiz.korma.geom.Point
-import com.soywiz.korma.geom.Rectangle
 import game.action.Walk
 import game.world.CritterType
 import game.world.Decor
@@ -31,6 +31,13 @@ val south = Vec2(0, 1)
 
 lateinit var swing: NativeSound
 lateinit var door: NativeSound
+var gameState: GameState = GameState.PLAYING
+
+enum class GameState {
+    PLAYING,
+    WON,
+    LOST
+}
 
 suspend fun main() = Korge(width = tileSize * mapWidth, height = tileSize * mapHeight, bgcolor = Colors["#2b2b2b"]) {
     // scale = 4.0
@@ -64,17 +71,28 @@ suspend fun main() = Korge(width = tileSize * mapWidth, height = tileSize * mapH
             world.player.ai?.setAction(Walk(south))
         }
     }
-//    solidRect(16, 4, Colors.RED)
+    val winText = text("YOU WIN",textSize = 24.0).xy(400,500)
+    winText.visible = false
+    val lostText = text("YOU LOSE" ,textSize = 24.0).xy(400,500)
+    lostText.visible = false
+
     addFixedUpdater(60.timesPerSecond) {
 
+        winText.visible = gameState == GameState.WON
+        lostText.visible = gameState == GameState.LOST
+
         // TODO: this doesnt work?
-        camera {
-            setTo(Rectangle(world.player.pos.x * tileSize, world.player.pos.y * tileSize, 64, 64))
-        }
+//        camera {
+//            setTo(Rectangle(world.player.pos.x * tileSize, world.player.pos.y * tileSize, 64, 64))
+//        }
 
         // Get the next person who acts, do their act
         world.passTime()
 
+        world.tiles.forEach { it ->
+            it.sprite.playAnimationLooped(it.tileType.animation, spriteDisplayTime = 250.milliseconds)
+            it.decorSprite?.playAnimationLooped(it.decor?.animation, spriteDisplayTime = 250.milliseconds)
+        }
 
         world.entities.forEach {
 
@@ -129,8 +147,6 @@ suspend fun textureWork() {
 
     TileType.FLOOR.animation = SpriteAnimation(tileMap, tileSize, tileSize, 1 * tileSize, 3 * tileSize, 1, 1)
     TileType.WALL.animation = SpriteAnimation(tileMap, tileSize, tileSize, 4 * tileSize, 7 * tileSize, 1, 1)
-//    TileType.WALL_SKELETON.animation = SpriteAnimation(tileMap, tileSize, tileSize, 4 * tileSize, 7 * tileSize, 1, 1)
-
 
     TileType.DIRT.animation = SpriteAnimation(tileMap, tileSize, tileSize, 2 * tileSize, 5 * tileSize, 1, 1)
     TileType.DOWN_STAIR.animation = SpriteAnimation(tileMap, tileSize, tileSize, 1 * tileSize, 3 * tileSize, 1, 1)
@@ -149,5 +165,7 @@ suspend fun textureWork() {
     Decor.BARREL.animation = SpriteAnimation(tileMap, tileSize, tileSize, 0 * tileSize, 1 * tileSize, 1, 1)
     Decor.GOLD.animation = SpriteAnimation(tileMap, tileSize, tileSize, 0 * tileSize, 0 * tileSize, 1, 1)
     Decor.TORCH.animation = SpriteAnimation(spriteSheet, tileSize, tileSize, 3 * tileSize, 6 * tileSize, 6, 1)
+    Decor.CHEST.animation = SpriteAnimation(spriteSheet, tileSize, tileSize, 1 * tileSize, 6 * tileSize, 8, 1)
+
 }
 

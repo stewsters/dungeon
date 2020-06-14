@@ -14,13 +14,9 @@ import tileSize
 import kotlin.math.min
 import kotlin.random.Random
 
-
 private val ROOM_MAX_SIZE = 6
 private val ROOM_MIN_SIZE = 3
 private val MAX_ROOMS = 20
-private val MAX_ROOM_MONSTERS = 2
-private val MAX_ROOM_ITEMS = 2
-
 
 fun d(max: Int) = (1..max).random()
 fun coinFlip() = Random.nextBoolean()
@@ -151,12 +147,16 @@ fun generateMap(): World {
         } else {
             //TODO: add objects
             //placeObjects(map, newRoom,  MAX_ROOM_MONSTERS, MAX_ROOM_ITEMS)
-            val surrounds = center.inclusiveMooreNeighborhood().filter { !map[it].blocks }.shuffled()
+            val surrounds = center.mooreNeighborhood().filter { !map[it].blocks }.shuffled()
             repeat((0 until min(4, surrounds.size)).random()) {
                 entities += Entity(surrounds[it], enemies().random(), OpponentAI(), blocks = true)
             }
         }
     }
+
+    // place the end as far as possible away from the start
+    val furthest = roomCenters.maxBy { getEuclideanDistance(roomCenters[0], it) }
+    decor[furthest!!] = Decor.CHEST
 
     return World(
             tiles = Matrix2d(map.getSize()) { x, y ->

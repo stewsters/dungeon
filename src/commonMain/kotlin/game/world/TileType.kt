@@ -24,7 +24,8 @@ enum class Decor(val blocks: Boolean) {
     RED_BANNER(true),
     BARREL(true),
     GOLD(true),
-    TORCH(true);
+    TORCH(true),
+    CHEST(true);
 
     lateinit var animation: SpriteAnimation
 }

@@ -1,9 +1,12 @@
 package game.action
 
+import GameState
 import door
+import game.world.Decor
 import game.world.Entity
 import game.world.TileType
 import game.world.World
+import gameState
 import math.Vec2
 
 
@@ -15,6 +18,11 @@ class Walk(val dir: Vec2) : Action {
 
         if (world.tiles.outside(nextPos)) {
             return Failed
+        }
+
+        if (entity.player && world.tiles[nextPos].decor == Decor.CHEST) {
+            gameState = GameState.WON
+            return Succeeded
         }
 
         val entitiesOnNextSpace = world.entities.filter { it.pos == nextPos }
@@ -47,7 +55,7 @@ class Walk(val dir: Vec2) : Action {
         }
 
         entity.pos = nextPos
-        if(entity.stabber){
+        if (entity.stabber) {
             val nextPos = entity.pos + dir
             val entitiesOnNextSpace = world.entities.filter { it.pos == nextPos }
             val meleeTargets = entitiesOnNextSpace.filter {

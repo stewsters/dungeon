@@ -1,7 +1,9 @@
 package game.action
 
+import GameState
 import game.world.Entity
 import game.world.World
+import gameState
 import math.getChebyshevDistance
 import swing
 
@@ -29,6 +31,9 @@ class Melee(
             victim.blocks = false
             victim.sprite.removeFromParent()
 //            victim.sprite.rotation = 90.degrees
+            if (victim.player) {
+                gameState = GameState.LOST
+            }
 
         }
 
