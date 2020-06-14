@@ -1,5 +1,6 @@
 package game.action
 
+import door
 import game.world.Entity
 import game.world.TileType
 import game.world.World
@@ -28,6 +29,7 @@ class Walk(val dir: Vec2) : Action {
         if (entity.player && world.tiles[nextPos].tileType == TileType.DOOR_CLOSED) {
             world.tiles[nextPos].tileType = TileType.DOOR_OPEN
             world.tiles[nextPos].rebuild()
+            door.play()
             return Succeeded
         }
 

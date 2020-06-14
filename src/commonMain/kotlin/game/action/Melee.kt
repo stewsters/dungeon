@@ -4,6 +4,7 @@ import com.soywiz.korma.geom.degrees
 import game.world.Entity
 import game.world.World
 import math.getChebyshevDistance
+import swing
 
 
 class Melee(
@@ -20,11 +21,15 @@ class Melee(
         }
 
         victim.life?.damage(5) // TODO: this probably needs to be
+        swing.play()
 
         if (victim.life!!.current <= 0) {
             victim.life = null
             victim.ai = null
-            victim.sprite.rotation = 90.degrees
+
+            victim.sprite.removeFromParent()
+//            victim.sprite.rotation = 90.degrees
+
         }
 
         return Succeeded

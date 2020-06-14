@@ -29,7 +29,7 @@ fun coinFlip() = Random.nextBoolean()
 
 fun generateMap(): World {
 
-    val player = Entity(Vec2(7, 7), CritterType.PLAYER, PlayerAI(), player = true)
+    val player = Entity(Vec2(7, 7), CritterType.KNIGHT, PlayerAI(), player = true)
     val map = Matrix2d(64, 64) { x, y -> TileType.DIRT }
 
     val roomCenters = mutableListOf<Vec2>()

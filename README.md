@@ -5,6 +5,14 @@ This is a simple game about raiding a dungeon for loot.
 It was made as a part of the [1st KorGE Game JAM](https://itch.io/jam/korge-gamejam-1)
 The theme was classic, so I made a simplified roguelike.
 
+## Assets
+[Tile Set](https://o-lobster.itch.io/simple-dungeon-crawler-16x16-pixel-pack)
+
+[Music](https://opengameart.org/content/ruins-of-empire)
+
+[Sounds](https://opengameart.org/content/rpg-sound-pack)
+
+## Getting it Running
 You can open this project in IntelliJ IDEA by opening the folder or the build.gradle.kts file.
 
 For Windows, change all the `./gradlew` for `gradlew.bat`.

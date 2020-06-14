@@ -1,5 +1,8 @@
 import com.soywiz.klock.milliseconds
 import com.soywiz.klock.timesPerSecond
+import com.soywiz.korau.sound.NativeSound
+import com.soywiz.korau.sound.readMusic
+import com.soywiz.korau.sound.readSound
 import com.soywiz.korev.Key
 import com.soywiz.korge.Korge
 import com.soywiz.korge.input.keys
@@ -25,9 +28,19 @@ val north = Vec2(0, -1)
 val west = Vec2(-1, 0)
 val south = Vec2(0, 1)
 
+lateinit var swing:NativeSound
+lateinit var door:NativeSound
+
 suspend fun main() = Korge(width = tileSize * mapWidth, height = tileSize * mapHeight, bgcolor = Colors["#2b2b2b"]) {
     // scale = 4.0
     textureWork()
+
+    val music = resourcesVfs["music/RuinsOfEmpire.mp3"].readMusic()
+//    val music = resourcesVfs["music/ursus.mp3"].readMusic()
+    music.play()
+
+    swing = resourcesVfs["sound/swing.wav"].readSound()
+    door = resourcesVfs["sound/door.wav"].readSound()
 
     val world = generateMap()
     world.tiles.forEach { tile -> addChild(tile.sprite) }
@@ -103,7 +116,7 @@ suspend fun textureWork() {
         standAnimation = SpriteAnimation(spriteSheet, tileSize, tileSize, 48, 0, 6, 1)
         moveAnimation = SpriteAnimation(spriteSheet, tileSize, tileSize, 64, 0, 6, 1)
     }
-    CritterType.PLAYER.apply {
+    CritterType.KNIGHT.apply {
         standAnimation = SpriteAnimation(spriteSheet, tileSize, tileSize, 80, 0, 6, 1)
         moveAnimation = SpriteAnimation(spriteSheet, tileSize, tileSize, 96, 0, 6, 1)
     }
