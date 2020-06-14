@@ -22,6 +22,7 @@ class Walk(val dir: Vec2) : Action {
 
         if (entity.player && world.tiles[nextPos].decor == Decor.CHEST) {
             gameState = GameState.WON
+            world.tiles[nextPos].decor = Decor.CHEST_OPEN
             return Succeeded
         }
 

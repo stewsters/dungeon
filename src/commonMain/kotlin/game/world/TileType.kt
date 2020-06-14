@@ -25,7 +25,8 @@ enum class Decor(val blocks: Boolean) {
     BARREL(true),
     GOLD(true),
     TORCH(true),
-    CHEST(true);
+    CHEST(true),
+    CHEST_OPEN(true);
 
     lateinit var animation: SpriteAnimation
 }

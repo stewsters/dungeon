@@ -9,7 +9,7 @@ class Cell(
         x: Int,
         y: Int,
         var tileType: TileType,
-        val decor: Decor? = null,
+        var decor: Decor? = null,
         val sprite: Sprite = Sprite(tileType.animation).xy(x * tileSize, y * tileSize),
         val decorSprite: Sprite? = if (decor != null) Sprite(decor.animation).xy(x * tileSize, y * tileSize) else null,
         var lit: Boolean = false,

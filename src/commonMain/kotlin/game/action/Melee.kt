@@ -21,7 +21,7 @@ class Melee(
             return Failed
         }
 
-        victim.life?.damage(5) // TODO: this probably needs to be
+        victim.life?.damage(1) // TODO: this need variation
         swing.play()
 
         if (victim.life!!.current <= 0) {

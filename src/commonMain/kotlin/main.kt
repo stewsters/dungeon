@@ -1,3 +1,4 @@
+import com.soywiz.kds.iterators.fastForEachWithIndex
 import com.soywiz.klock.milliseconds
 import com.soywiz.klock.timesPerSecond
 import com.soywiz.korau.sound.NativeSound
@@ -6,10 +7,7 @@ import com.soywiz.korau.sound.readSound
 import com.soywiz.korev.Key
 import com.soywiz.korge.Korge
 import com.soywiz.korge.input.keys
-import com.soywiz.korge.view.SpriteAnimation
-import com.soywiz.korge.view.addFixedUpdater
-import com.soywiz.korge.view.text
-import com.soywiz.korge.view.xy
+import com.soywiz.korge.view.*
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.format.readBitmap
 import com.soywiz.korio.file.std.resourcesVfs
@@ -31,6 +29,7 @@ val south = Vec2(0, 1)
 
 lateinit var swing: NativeSound
 lateinit var door: NativeSound
+lateinit var health: SpriteAnimation
 var gameState: GameState = GameState.PLAYING
 
 enum class GameState {
@@ -71,16 +70,31 @@ suspend fun main() = Korge(width = tileSize * mapWidth, height = tileSize * mapH
             world.player.ai?.setAction(Walk(south))
         }
     }
+
+    // Win / Loss Message
     val winText = text("YOU WIN", textSize = 24.0).xy(400, 500)
     winText.visible = false
     val lostText = text("YOU LOSE", textSize = 24.0).xy(400, 500)
     lostText.visible = false
+
+    text("Life").xy(0,0)
+
+    // HP flasks
+    val flasks: Array<Sprite> = Array(CritterType.KNIGHT.hp) { Sprite(health).xy(it * tileSize, tileSize) }
+    flasks.forEach { addChild(it) }
 
     world.recalculateLight()
     addFixedUpdater(60.timesPerSecond) {
 
         winText.visible = gameState == GameState.WON
         lostText.visible = gameState == GameState.LOST
+
+        val playerHealth = world.player.life?.current ?:0
+
+        flasks.fastForEachWithIndex { index, flask ->
+            flask.visible = index < playerHealth
+            flask.playAnimationLooped()
+        }
 
         // TODO: this doesnt work?
 //        camera {
@@ -173,6 +187,9 @@ suspend fun textureWork() {
     Decor.GOLD.animation = SpriteAnimation(tileMap, tileSize, tileSize, 0 * tileSize, 0 * tileSize, 1, 1)
     Decor.TORCH.animation = SpriteAnimation(spriteSheet, tileSize, tileSize, 3 * tileSize, 6 * tileSize, 6, 1)
     Decor.CHEST.animation = SpriteAnimation(spriteSheet, tileSize, tileSize, 1 * tileSize, 6 * tileSize, 8, 1)
+    Decor.CHEST_OPEN.animation = SpriteAnimation(spriteSheet, tileSize, tileSize, 1 * tileSize, 14 * tileSize, 1, 1)
+
+    health = SpriteAnimation(tileMap, tileSize, tileSize, 0 * tileSize, 7 * tileSize, 1, 1)
 
 }
 

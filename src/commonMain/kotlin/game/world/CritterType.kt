@@ -19,10 +19,10 @@ enum class CritterType(
 ) {
 
     BAT(1, 5),
-    GOBLIN(5, 4),
-    JELLY(10, 2),
+    GOBLIN(1, 4),
+    JELLY(2, 2),
 
-    KNIGHT(20, 4),
+    KNIGHT(4, 4),
     THIEF(15, 5),
     MAGE(10, 3);
 
