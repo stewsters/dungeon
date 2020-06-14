@@ -20,7 +20,7 @@ class WalkToPoint(
             return Succeeded
 
         if (getManhattanDistance(destination, entity.pos) <= 1) {
-            return Walk(destination-entity.pos).onPerform(world,entity)
+            return Walk(destination - entity.pos).onPerform(world, entity)
         }
 
         // if not adjacent, path to point
@@ -45,7 +45,7 @@ class WalkToPoint(
 
         val offset = path[1] - entity.pos
 
-        return Walk(offset).onPerform(world,entity)
+        return Walk(offset).onPerform(world, entity)
     }
 
 }

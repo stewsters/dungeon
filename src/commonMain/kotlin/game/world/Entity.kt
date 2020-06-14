@@ -15,7 +15,7 @@ class Entity(
         var life: RangedValue? = if (type != null) RangedValue(type.hp) else null,
         val player: Boolean = false,
         var blocks: Boolean = false,
-        val stabber:Boolean = false
+        val stabber: Boolean = false
 ) {
     fun isAlive(): Boolean = life?.current ?: 0 > 0
 

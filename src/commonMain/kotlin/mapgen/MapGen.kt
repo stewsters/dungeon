@@ -1,10 +1,10 @@
-package game.world
+package mapgen
 
 import DrawCell2d
 import com.soywiz.korge.view.xy
 import game.ai.OpponentAI
 import game.ai.PlayerAI
-import mapgen.MapGen2d
+import game.world.*
 import mapgen.predicate.*
 import math.Matrix2d
 import math.Vec2

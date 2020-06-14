@@ -18,7 +18,7 @@ import game.action.Walk
 import game.world.CritterType
 import game.world.Decor
 import game.world.TileType
-import game.world.generateMap
+import mapgen.generateMap
 import math.Vec2
 
 val tileSize = 16
@@ -71,11 +71,12 @@ suspend fun main() = Korge(width = tileSize * mapWidth, height = tileSize * mapH
             world.player.ai?.setAction(Walk(south))
         }
     }
-    val winText = text("YOU WIN",textSize = 24.0).xy(400,500)
+    val winText = text("YOU WIN", textSize = 24.0).xy(400, 500)
     winText.visible = false
-    val lostText = text("YOU LOSE" ,textSize = 24.0).xy(400,500)
+    val lostText = text("YOU LOSE", textSize = 24.0).xy(400, 500)
     lostText.visible = false
 
+    world.recalculateLight()
     addFixedUpdater(60.timesPerSecond) {
 
         winText.visible = gameState == GameState.WON
@@ -90,7 +91,12 @@ suspend fun main() = Korge(width = tileSize * mapWidth, height = tileSize * mapH
         world.passTime()
 
         world.tiles.forEach { it ->
+            it.sprite.visible = it.lit || it.wasLit
+            it.sprite.colorMul = if (!it.lit && it.wasLit) Colors.DARKGRAY else Colors.WHITE
             it.sprite.playAnimationLooped(it.tileType.animation, spriteDisplayTime = 250.milliseconds)
+
+            it.decorSprite?.visible = it.lit || it.wasLit
+            it.decorSprite?.colorMul = if (!it.lit && it.wasLit) Colors.DARKGRAY else Colors.WHITE
             it.decorSprite?.playAnimationLooped(it.decor?.animation, spriteDisplayTime = 250.milliseconds)
         }
 
@@ -109,6 +115,7 @@ suspend fun main() = Korge(width = tileSize * mapWidth, height = tileSize * mapH
             it.sprite.x += diff.x
             it.sprite.y += diff.y
 
+            it.sprite.visible = world.tiles[it.pos].lit
             if (it.isAlive())
                 if (diff.length > 2) {
                     it.sprite.playAnimationLooped(it.type.moveAnimation, spriteDisplayTime = 250.milliseconds)
