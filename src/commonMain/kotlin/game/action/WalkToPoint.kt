@@ -37,7 +37,7 @@ class WalkToPoint(
                 neighbors = { our ->
                     our.vonNeumanNeighborhood().filter { vec ->
                         world.tiles.contains(vec) &&
-                                !world.tiles[vec].tileType.blocks &&
+                                !world.tiles[vec].isBlocked() &&
                                 world.entities.filter { it.pos == vec && it != entity && it.isAlive() && !it.player }.isEmpty()
                     }
                 },
@@ -52,7 +52,7 @@ class WalkToPoint(
         val next = world.tiles[path[1]]
         val entitiesOnNextTile = world.entities.filter { it.pos == path[1] }
 
-        if (next.tileType.blocks || entitiesOnNextTile.any { it.isAlive() }) {
+        if (next.isBlocked() || entitiesOnNextTile.any { it.isAlive() }) {
             return Failed
         }
 
@@ -66,13 +66,13 @@ class WalkToPoint(
             return Melee(meleeTargets.first()).onPerform(world, entity)
         }
 
-
-        // get next step, go there
-        if (entitiesOnNextTile.any { !it.isAlive() }) {
-            // Free loot pickup
-            return Loot().onPerform(world, entity)
-            //return Alternative(Loot())
-        }
+// TODO: add looting
+//        // get next step, go there
+//        if (entitiesOnNextTile.any { !it.isAlive() }) {
+//            // Free loot pickup
+//            return Loot().onPerform(world, entity)
+//            //return Alternative(Loot())
+//        }
 
         entity.pos = path[1]
 

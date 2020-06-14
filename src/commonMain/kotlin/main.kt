@@ -16,6 +16,7 @@ import com.soywiz.korma.geom.Point
 import com.soywiz.korma.geom.Rectangle
 import game.action.Walk
 import game.world.CritterType
+import game.world.Decor
 import game.world.TileType
 import game.world.generateMap
 import math.Vec2
@@ -28,22 +29,25 @@ val north = Vec2(0, -1)
 val west = Vec2(-1, 0)
 val south = Vec2(0, 1)
 
-lateinit var swing:NativeSound
-lateinit var door:NativeSound
+lateinit var swing: NativeSound
+lateinit var door: NativeSound
 
 suspend fun main() = Korge(width = tileSize * mapWidth, height = tileSize * mapHeight, bgcolor = Colors["#2b2b2b"]) {
     // scale = 4.0
     textureWork()
 
     val music = resourcesVfs["music/RuinsOfEmpire.mp3"].readMusic()
-//    val music = resourcesVfs["music/ursus.mp3"].readMusic()
     music.play()
 
     swing = resourcesVfs["sound/swing.wav"].readSound()
     door = resourcesVfs["sound/door.wav"].readSound()
 
     val world = generateMap()
-    world.tiles.forEach { tile -> addChild(tile.sprite) }
+    world.tiles.forEach { tile ->
+        addChild(tile.sprite)
+        if (tile.decorSprite != null)
+            addChild(tile.decorSprite)
+    }
     world.entities.forEach { addChild(it.sprite) }
 
     keys {
@@ -60,7 +64,7 @@ suspend fun main() = Korge(width = tileSize * mapWidth, height = tileSize * mapH
             world.player.ai?.setAction(Walk(south))
         }
     }
-
+//    solidRect(16, 4, Colors.RED)
     addFixedUpdater(60.timesPerSecond) {
 
         // TODO: this doesnt work?
@@ -125,11 +129,25 @@ suspend fun textureWork() {
 
     TileType.FLOOR.animation = SpriteAnimation(tileMap, tileSize, tileSize, 1 * tileSize, 3 * tileSize, 1, 1)
     TileType.WALL.animation = SpriteAnimation(tileMap, tileSize, tileSize, 4 * tileSize, 7 * tileSize, 1, 1)
+//    TileType.WALL_SKELETON.animation = SpriteAnimation(tileMap, tileSize, tileSize, 4 * tileSize, 7 * tileSize, 1, 1)
+
+
     TileType.DIRT.animation = SpriteAnimation(tileMap, tileSize, tileSize, 2 * tileSize, 5 * tileSize, 1, 1)
+    TileType.DOWN_STAIR.animation = SpriteAnimation(tileMap, tileSize, tileSize, 1 * tileSize, 3 * tileSize, 1, 1)
+    TileType.BOOKSHELF.animation = SpriteAnimation(tileMap, tileSize, tileSize, 0 * tileSize, 2 * tileSize, 1, 1)
 
     TileType.DOOR_CLOSED.animation = SpriteAnimation(tileMap, tileSize, tileSize, 5 * tileSize, 7 * tileSize, 1, 1)
     TileType.DOOR_OPEN.animation = SpriteAnimation(tileMap, tileSize, tileSize, 1 * tileSize, 3 * tileSize, 1, 1)
     TileType.WATER_DEEP.animation = SpriteAnimation(tileMap, tileSize, tileSize, 2 * tileSize, 5 * tileSize, 1, 1)
     TileType.WATER_SHALLOW.animation = SpriteAnimation(tileMap, tileSize, tileSize, 1 * tileSize, 2 * tileSize, 1, 1)
+
+
+    Decor.TABLE.animation = SpriteAnimation(tileMap, tileSize, tileSize, 1 * tileSize, 5 * tileSize, 1, 1)
+    Decor.WALL_SKELETON.animation = SpriteAnimation(tileMap, tileSize, tileSize, 1 * tileSize, 4 * tileSize, 1, 1)
+    Decor.GREEN_BANNER.animation = SpriteAnimation(tileMap, tileSize, tileSize, 0 * tileSize, 3 * tileSize, 1, 1)
+    Decor.RED_BANNER.animation = SpriteAnimation(tileMap, tileSize, tileSize, 0 * tileSize, 4 * tileSize, 1, 1)
+    Decor.BARREL.animation = SpriteAnimation(tileMap, tileSize, tileSize, 0 * tileSize, 1 * tileSize, 1, 1)
+    Decor.GOLD.animation = SpriteAnimation(tileMap, tileSize, tileSize, 0 * tileSize, 0 * tileSize, 1, 1)
+    Decor.TORCH.animation = SpriteAnimation(spriteSheet, tileSize, tileSize, 3 * tileSize, 6 * tileSize, 6, 1)
 }
 

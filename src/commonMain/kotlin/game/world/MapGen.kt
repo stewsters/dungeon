@@ -5,9 +5,7 @@ import com.soywiz.korge.view.xy
 import game.ai.OpponentAI
 import game.ai.PlayerAI
 import mapgen.MapGen2d
-import mapgen.predicate.AndPredicate2d
-import mapgen.predicate.CellEquals2d
-import mapgen.predicate.CellNearCell2d
+import mapgen.predicate.*
 import math.Matrix2d
 import math.Vec2
 import math.findPath2d
@@ -29,8 +27,9 @@ fun coinFlip() = Random.nextBoolean()
 
 fun generateMap(): World {
 
-    val player = Entity(Vec2(7, 7), CritterType.KNIGHT, PlayerAI(), player = true)
+    val player = Entity(Vec2(7, 7), CritterType.KNIGHT, PlayerAI(), player = true, blocks = true)
     val map = Matrix2d(64, 64) { x, y -> TileType.DIRT }
+    val decor = Matrix2d<Decor?>(map.getSize()) { x, y -> null }
 
     val roomCenters = mutableListOf<Vec2>()
     val entities = mutableListOf(player)
@@ -59,9 +58,34 @@ fun generateMap(): World {
             DrawCell2d(TileType.WALL)
     )
 
+    // room wall decals
+    MapGen2d.fill(map, AndPredicate2d(arrayOf(
+            CellEquals2d(TileType.WALL),
+            CellNearCell2d(TileType.FLOOR),
+            RandomPredicate2d(0.05f)
+    ))) { x, y ->
+        decor[x, y] = arrayOf(Decor.WALL_SKELETON, Decor.TORCH, Decor.GREEN_BANNER, Decor.RED_BANNER).random()
+    }
+
+    MapGen2d.fill(map, AndPredicate2d(arrayOf(
+            CellEquals2d(TileType.FLOOR),
+            CellNotNearCell2d(TileType.WALL),
+            RandomPredicate2d(0.05f)
+    ))) { x, y ->
+        decor[x, y] = arrayOf(Decor.TABLE, Decor.BARREL).random()
+    }
+
+    MapGen2d.fill(map, AndPredicate2d(arrayOf(
+            CellEquals2d(TileType.FLOOR),
+            CellNearCell2d(TileType.WALL),
+            RandomPredicate2d(0.05f)
+    )),
+            DrawCell2d(TileType.BOOKSHELF)
+    )
+
+
     // Link them up.  Dig tunnels using a*
     // anything that is a wall gets turned to a door
-
 
     // Cutting paths
     // Link them up.  Dig tunnels using a*
@@ -89,8 +113,10 @@ fun generateMap(): World {
                     val tile: TileType = map[currentStep]
                     if (tile === TileType.WALL) {
                         map[currentStep] = TileType.DOOR_CLOSED
+                        decor[currentStep] = null
                     } else if (tile !== TileType.DOOR_CLOSED && tile !== TileType.DOOR_OPEN) {
                         map[currentStep] = TileType.FLOOR
+                        decor[currentStep] = null
                     }
                 }
             }
@@ -125,16 +151,20 @@ fun generateMap(): World {
         } else {
             //TODO: add objects
             //placeObjects(map, newRoom,  MAX_ROOM_MONSTERS, MAX_ROOM_ITEMS)
-            entities += Entity(center, enemies().random(), OpponentAI())
+            val surrounds = center.inclusiveMooreNeighborhood().filter { !map[it].blocks }.shuffled()
+            repeat((0 until min(4, surrounds.size)).random()) {
+                entities += Entity(surrounds[it], enemies().random(), OpponentAI(), blocks = true)
+            }
         }
     }
 
     return World(
-            tiles = Matrix2d(map.getSize()) { x, y -> Cell(x, y, map[x, y]) },
+            tiles = Matrix2d(map.getSize()) { x, y ->
+                Cell(x, y, map[x, y], decor[x, y])
+            },
             entities = entities,
             player = player
     )
-
 }
 
 

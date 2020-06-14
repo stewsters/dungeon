@@ -13,7 +13,8 @@ class Entity(
         var ai: AI? = null,
         val sprite: Sprite = Sprite(type.standAnimation).xy(pos.x * tileSize, pos.y * tileSize),
         var life: RangedValue? = if (type != null) RangedValue(type.hp) else null,
-        val player: Boolean = false
+        val player: Boolean = false,
+        var blocks: Boolean = false
 ) {
     fun isAlive(): Boolean = life?.current ?: 0 > 0
 

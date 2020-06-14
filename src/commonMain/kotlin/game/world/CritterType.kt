@@ -4,11 +4,11 @@ import com.soywiz.korge.view.SpriteAnimation
 
 enum class CritterType(
         val hp: Int,
-         val movement:Int
-    // damage
-    // to hit - exclude to avoid missing.  Do need it if we want to lower chance with hits
-    // dodge/ac/dr?
-    // movement
+        val movement: Int
+        // damage
+        // to hit - exclude to avoid missing.  Do need it if we want to lower chance with hits
+        // dodge/ac/dr?
+        // movement
 //        val lowDamage: Int = 0
 //        val highDamage: Int = 0
 //
@@ -20,11 +20,11 @@ enum class CritterType(
 
     BAT(1, 5),
     GOBLIN(5, 4),
-    JELLY(10,2),
+    JELLY(10, 2),
 
-    KNIGHT(20,4),
-    THIEF(15,5),
-    MAGE(10,3);
+    KNIGHT(20, 4),
+    THIEF(15, 5),
+    MAGE(10, 3);
 
 
     lateinit var standAnimation: SpriteAnimation

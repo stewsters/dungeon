@@ -33,7 +33,7 @@ class Walk(val dir: Vec2) : Action {
             return Succeeded
         }
 
-        if (world.tiles[nextPos].tileType.blocks) {
+        if (world.tiles[nextPos].isBlocked()) {
             //blocked
             return Failed
         }

@@ -1,6 +1,5 @@
 package game.action
 
-import com.soywiz.korma.geom.degrees
 import game.world.Entity
 import game.world.World
 import math.getChebyshevDistance
@@ -27,6 +26,7 @@ class Melee(
             victim.life = null
             victim.ai = null
 
+            victim.blocks = false
             victim.sprite.removeFromParent()
 //            victim.sprite.rotation = 90.degrees
 
