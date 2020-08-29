@@ -17,7 +17,6 @@ class World(
     fun passTime() {
 
         // find the entity with an actor of the lowest time priority, do it if it can
-
         val nextEntity = entities.filter { it.ai != null }
                 .minBy { it.ai!!.nextTurn() }
 
@@ -40,21 +39,25 @@ class World(
     fun recalculateLight() {
         // set all to false
         // find player, in radius make visible
-        tiles.forEach { it -> it.lit = false }
+        tiles.forEach { tile -> tile.lit = false }
         val players = entities.filter { it.player }
         players.forEach { player ->
 
+            // for all points in square
             for (xD in (-10..10)) {
                 for (yD in (-10..10)) {
 
                     val x = player.pos.x + xD
                     val y = player.pos.y + yD
 
+                    // if less than sight radius
+                    // if bresenham possible
                     if (tiles.contains(x, y)
                             && getEuclideanDistance(0.0, 0.0, xD.toDouble(), yD.toDouble()) < 10
-                            && (los(player.pos.x, player.pos.y, x, y) { x, y -> !tiles[x, y].tileType.blocks }
-                                    || los(x, y, player.pos.x, player.pos.y) { x, y -> !tiles[x, y].tileType.blocks })
+                            && (los(player.pos.x, player.pos.y, x, y) { xp, yp -> !tiles[xp, yp].tileType.blocks }
+                                    || los(x, y, player.pos.x, player.pos.y) { xp, yp -> !tiles[xp, yp].tileType.blocks })
                     ) {
+                        // mark as seen
                         tiles[x, y].lit = true
                         tiles[x, y].wasLit = true
                     }
@@ -64,10 +67,6 @@ class World(
             }
 
 
-            // for all points in square
-            // if less than sight radius
-            // if bresenham possible
-            // mark as seen
         }
     }
 }

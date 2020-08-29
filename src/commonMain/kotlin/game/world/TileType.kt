@@ -13,8 +13,10 @@ enum class TileType(val blocks: Boolean, val tunnelCost: Double) {
     WATER_SHALLOW(false, 2.0),
     WATER_DEEP(true, 4.0); // TODO: bats can fly over it?
 
-    lateinit var animation: SpriteAnimation
+    fun getAnimation(): SpriteAnimation?= tileTypeAnimation[this]
 }
+
+val tileTypeAnimation = mutableMapOf<TileType,SpriteAnimation>()
 
 // decor goes over tiles, and modifies it?
 enum class Decor(val blocks: Boolean) {
@@ -28,5 +30,7 @@ enum class Decor(val blocks: Boolean) {
     CHEST(true),
     CHEST_OPEN(true);
 
-    lateinit var animation: SpriteAnimation
+    fun getAnimation(): SpriteAnimation? = decorAnimation[this]
 }
+
+val decorAnimation = mutableMapOf<Decor,SpriteAnimation>()

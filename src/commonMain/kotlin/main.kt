@@ -13,9 +13,7 @@ import com.soywiz.korim.format.readBitmap
 import com.soywiz.korio.file.std.resourcesVfs
 import com.soywiz.korma.geom.Point
 import game.action.Walk
-import game.world.CritterType
-import game.world.Decor
-import game.world.TileType
+import game.world.*
 import mapgen.generateMap
 import math.Vec2
 
@@ -77,7 +75,7 @@ suspend fun main() = Korge(width = tileSize * mapWidth, height = tileSize * mapH
     val lostText = text("YOU LOSE", textSize = 24.0).xy(400, 500)
     lostText.visible = false
 
-    text("Life").xy(0,0)
+    text("Life").xy(0, 0)
 
     // HP flasks
     val flasks: Array<Sprite> = Array(CritterType.KNIGHT.hp) { Sprite(health).xy(it * tileSize, tileSize) }
@@ -89,7 +87,7 @@ suspend fun main() = Korge(width = tileSize * mapWidth, height = tileSize * mapH
         winText.visible = gameState == GameState.WON
         lostText.visible = gameState == GameState.LOST
 
-        val playerHealth = world.player.life?.current ?:0
+        val playerHealth = world.player.life?.current ?: 0
 
         flasks.fastForEachWithIndex { index, flask ->
             flask.visible = index < playerHealth
@@ -107,11 +105,11 @@ suspend fun main() = Korge(width = tileSize * mapWidth, height = tileSize * mapH
         world.tiles.forEach { it ->
             it.sprite.visible = it.lit || it.wasLit
             it.sprite.colorMul = if (!it.lit && it.wasLit) Colors.DARKGRAY else Colors.WHITE
-            it.sprite.playAnimationLooped(it.tileType.animation, spriteDisplayTime = 250.milliseconds)
+            it.sprite.playAnimationLooped(it.tileType.getAnimation(), spriteDisplayTime = 250.milliseconds)
 
             it.decorSprite?.visible = it.lit || it.wasLit
             it.decorSprite?.colorMul = if (!it.lit && it.wasLit) Colors.DARKGRAY else Colors.WHITE
-            it.decorSprite?.playAnimationLooped(it.decor?.animation, spriteDisplayTime = 250.milliseconds)
+            it.decorSprite?.playAnimationLooped(it.decor?.getAnimation(), spriteDisplayTime = 250.milliseconds)
         }
 
         world.entities.forEach {
@@ -132,9 +130,9 @@ suspend fun main() = Korge(width = tileSize * mapWidth, height = tileSize * mapH
             it.sprite.visible = world.tiles[it.pos].lit
             if (it.isAlive())
                 if (diff.length > 2) {
-                    it.sprite.playAnimationLooped(it.type.moveAnimation, spriteDisplayTime = 250.milliseconds)
+                    it.sprite.playAnimationLooped(it.type.getMoveAnimation(), spriteDisplayTime = 250.milliseconds)
                 } else
-                    it.sprite.playAnimationLooped(it.type.standAnimation, spriteDisplayTime = 250.milliseconds)
+                    it.sprite.playAnimationLooped(it.type.getStandAnimation(), spriteDisplayTime = 250.milliseconds)
             else
                 it.sprite.stopAnimation()
         }
@@ -147,47 +145,43 @@ suspend fun textureWork() {
 
     val spriteSheet = resourcesVfs["spritesheet.png"].readBitmap()
 
-    CritterType.BAT.apply {
-        standAnimation = SpriteAnimation(spriteSheet, tileSize, tileSize, 0, 0, 4, 1)
-        moveAnimation = SpriteAnimation(spriteSheet, tileSize, tileSize, 0, 0, 4, 1)
-    }
-    CritterType.GOBLIN.apply {
-        standAnimation = SpriteAnimation(spriteSheet, tileSize, tileSize, tileSize, 0, 6, 1)
-        moveAnimation = SpriteAnimation(spriteSheet, tileSize, tileSize, 32, 0, 6, 1)
-    }
-    CritterType.JELLY.apply {
-        standAnimation = SpriteAnimation(spriteSheet, tileSize, tileSize, 48, 0, 6, 1)
-        moveAnimation = SpriteAnimation(spriteSheet, tileSize, tileSize, 64, 0, 6, 1)
-    }
-    CritterType.KNIGHT.apply {
-        standAnimation = SpriteAnimation(spriteSheet, tileSize, tileSize, 80, 0, 6, 1)
-        moveAnimation = SpriteAnimation(spriteSheet, tileSize, tileSize, 96, 0, 6, 1)
-    }
+    standAnimations[CritterType.BAT] = SpriteAnimation(spriteSheet, tileSize, tileSize, 0, 0, 4, 1)
+    moveAnimations[CritterType.BAT] = SpriteAnimation(spriteSheet, tileSize, tileSize, 0, 0, 4, 1)
+
+    standAnimations[CritterType.GOBLIN] = SpriteAnimation(spriteSheet, tileSize, tileSize, tileSize, 0, 6, 1)
+    moveAnimations[CritterType.GOBLIN] = SpriteAnimation(spriteSheet, tileSize, tileSize, 32, 0, 6, 1)
+
+    standAnimations[CritterType.JELLY] = SpriteAnimation(spriteSheet, tileSize, tileSize, 48, 0, 6, 1)
+    moveAnimations[CritterType.JELLY] = SpriteAnimation(spriteSheet, tileSize, tileSize, 64, 0, 6, 1)
+
+    standAnimations[CritterType.KNIGHT] = SpriteAnimation(spriteSheet, tileSize, tileSize, 80, 0, 6, 1)
+    moveAnimations[CritterType.KNIGHT] = SpriteAnimation(spriteSheet, tileSize, tileSize, 96, 0, 6, 1)
 
     val tileMap = resourcesVfs["tilemap.png"].readBitmap()
 
-    TileType.FLOOR.animation = SpriteAnimation(tileMap, tileSize, tileSize, 1 * tileSize, 3 * tileSize, 1, 1)
-    TileType.WALL.animation = SpriteAnimation(tileMap, tileSize, tileSize, 4 * tileSize, 7 * tileSize, 1, 1)
 
-    TileType.DIRT.animation = SpriteAnimation(tileMap, tileSize, tileSize, 2 * tileSize, 5 * tileSize, 1, 1)
-    TileType.DOWN_STAIR.animation = SpriteAnimation(tileMap, tileSize, tileSize, 1 * tileSize, 3 * tileSize, 1, 1)
-    TileType.BOOKSHELF.animation = SpriteAnimation(tileMap, tileSize, tileSize, 0 * tileSize, 2 * tileSize, 1, 1)
+    tileTypeAnimation[TileType.FLOOR] = SpriteAnimation(tileMap, tileSize, tileSize, 1 * tileSize, 3 * tileSize, 1, 1)
+    tileTypeAnimation[TileType.WALL] = SpriteAnimation(tileMap, tileSize, tileSize, 4 * tileSize, 7 * tileSize, 1, 1)
 
-    TileType.DOOR_CLOSED.animation = SpriteAnimation(tileMap, tileSize, tileSize, 5 * tileSize, 7 * tileSize, 1, 1)
-    TileType.DOOR_OPEN.animation = SpriteAnimation(tileMap, tileSize, tileSize, 1 * tileSize, 3 * tileSize, 1, 1)
-    TileType.WATER_DEEP.animation = SpriteAnimation(tileMap, tileSize, tileSize, 2 * tileSize, 5 * tileSize, 1, 1)
-    TileType.WATER_SHALLOW.animation = SpriteAnimation(tileMap, tileSize, tileSize, 1 * tileSize, 2 * tileSize, 1, 1)
+    tileTypeAnimation[TileType.DIRT] = SpriteAnimation(tileMap, tileSize, tileSize, 2 * tileSize, 5 * tileSize, 1, 1)
+    tileTypeAnimation[TileType.DOWN_STAIR] = SpriteAnimation(tileMap, tileSize, tileSize, 1 * tileSize, 3 * tileSize, 1, 1)
+    tileTypeAnimation[TileType.BOOKSHELF] = SpriteAnimation(tileMap, tileSize, tileSize, 0 * tileSize, 2 * tileSize, 1, 1)
+
+    tileTypeAnimation[TileType.DOOR_CLOSED] = SpriteAnimation(tileMap, tileSize, tileSize, 5 * tileSize, 7 * tileSize, 1, 1)
+    tileTypeAnimation[TileType.DOOR_OPEN] = SpriteAnimation(tileMap, tileSize, tileSize, 1 * tileSize, 3 * tileSize, 1, 1)
+    tileTypeAnimation[TileType.WATER_DEEP] = SpriteAnimation(tileMap, tileSize, tileSize, 2 * tileSize, 5 * tileSize, 1, 1)
+    tileTypeAnimation[TileType.WATER_SHALLOW] = SpriteAnimation(tileMap, tileSize, tileSize, 1 * tileSize, 2 * tileSize, 1, 1)
 
 
-    Decor.TABLE.animation = SpriteAnimation(tileMap, tileSize, tileSize, 1 * tileSize, 5 * tileSize, 1, 1)
-    Decor.WALL_SKELETON.animation = SpriteAnimation(tileMap, tileSize, tileSize, 1 * tileSize, 4 * tileSize, 1, 1)
-    Decor.GREEN_BANNER.animation = SpriteAnimation(tileMap, tileSize, tileSize, 0 * tileSize, 3 * tileSize, 1, 1)
-    Decor.RED_BANNER.animation = SpriteAnimation(tileMap, tileSize, tileSize, 0 * tileSize, 4 * tileSize, 1, 1)
-    Decor.BARREL.animation = SpriteAnimation(tileMap, tileSize, tileSize, 0 * tileSize, 1 * tileSize, 1, 1)
-    Decor.GOLD.animation = SpriteAnimation(tileMap, tileSize, tileSize, 0 * tileSize, 0 * tileSize, 1, 1)
-    Decor.TORCH.animation = SpriteAnimation(spriteSheet, tileSize, tileSize, 3 * tileSize, 6 * tileSize, 6, 1)
-    Decor.CHEST.animation = SpriteAnimation(spriteSheet, tileSize, tileSize, 1 * tileSize, 6 * tileSize, 8, 1)
-    Decor.CHEST_OPEN.animation = SpriteAnimation(spriteSheet, tileSize, tileSize, 1 * tileSize, 14 * tileSize, 1, 1)
+    decorAnimation[Decor.TABLE] = SpriteAnimation(tileMap, tileSize, tileSize, 1 * tileSize, 5 * tileSize, 1, 1)
+    decorAnimation[Decor.WALL_SKELETON] = SpriteAnimation(tileMap, tileSize, tileSize, 1 * tileSize, 4 * tileSize, 1, 1)
+    decorAnimation[Decor.GREEN_BANNER] = SpriteAnimation(tileMap, tileSize, tileSize, 0 * tileSize, 3 * tileSize, 1, 1)
+    decorAnimation[Decor.RED_BANNER] = SpriteAnimation(tileMap, tileSize, tileSize, 0 * tileSize, 4 * tileSize, 1, 1)
+    decorAnimation[Decor.BARREL] = SpriteAnimation(tileMap, tileSize, tileSize, 0 * tileSize, 1 * tileSize, 1, 1)
+    decorAnimation[Decor.GOLD] = SpriteAnimation(tileMap, tileSize, tileSize, 0 * tileSize, 0 * tileSize, 1, 1)
+    decorAnimation[Decor.TORCH] = SpriteAnimation(spriteSheet, tileSize, tileSize, 3 * tileSize, 6 * tileSize, 6, 1)
+    decorAnimation[Decor.CHEST] = SpriteAnimation(spriteSheet, tileSize, tileSize, 1 * tileSize, 6 * tileSize, 8, 1)
+    decorAnimation[Decor.CHEST_OPEN] = SpriteAnimation(spriteSheet, tileSize, tileSize, 1 * tileSize, 14 * tileSize, 1, 1)
 
     health = SpriteAnimation(tileMap, tileSize, tileSize, 0 * tileSize, 7 * tileSize, 1, 1)
 

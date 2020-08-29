@@ -57,13 +57,13 @@ class Walk(val dir: Vec2) : Action {
 
         entity.pos = nextPos
         if (entity.stabber) {
-            val nextPos = entity.pos + dir
-            val entitiesOnNextSpace = world.entities.filter { it.pos == nextPos }
-            val meleeTargets = entitiesOnNextSpace.filter {
+            val stabPos = entity.pos + dir
+            val entitiesOnStabSpace = world.entities.filter { it.pos == stabPos }
+            val stabTargets = entitiesOnStabSpace.filter {
                 it.isAlive() && it.player != entity.player
             }
-            if (meleeTargets.isNotEmpty()) {
-                return Melee(meleeTargets.first()).onPerform(world, entity)
+            if (stabTargets.isNotEmpty()) {
+                return Melee(stabTargets.first()).onPerform(world, entity)
             }
         }
 

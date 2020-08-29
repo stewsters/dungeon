@@ -11,7 +11,7 @@ class Entity(
         var pos: Vec2,
         var type: CritterType,
         var ai: AI? = null,
-        val sprite: Sprite = Sprite(type.standAnimation).xy(pos.x * tileSize, pos.y * tileSize),
+        val sprite: Sprite = Sprite(type.getMoveAnimation()!!).xy(pos.x * tileSize, pos.y * tileSize),
         var life: RangedValue? = if (type != null) RangedValue(type.hp) else null,
         val player: Boolean = false,
         var blocks: Boolean = false,

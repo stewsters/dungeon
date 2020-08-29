@@ -27,14 +27,22 @@ enum class CritterType(
     MAGE(10, 3);
 
 
-    lateinit var standAnimation: SpriteAnimation
-    lateinit var moveAnimation: SpriteAnimation
+    fun getStandAnimation(): SpriteAnimation? {
+        return standAnimations[this]
+    }
+
+    fun getMoveAnimation(): SpriteAnimation?{
+        return moveAnimations[this]
+    }
 
 
 }
 
 fun enemies(): List<CritterType> = listOf(CritterType.BAT, CritterType.GOBLIN, CritterType.JELLY)
 
+
+val standAnimations = mutableMapOf<CritterType, SpriteAnimation>()
+val moveAnimations = mutableMapOf<CritterType, SpriteAnimation>()
 
 //enum class MovementType {
 //    STATIONARY, ADVANCE,  // gets into melee.

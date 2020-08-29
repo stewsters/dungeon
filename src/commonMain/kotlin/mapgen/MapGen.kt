@@ -24,8 +24,8 @@ fun coinFlip() = Random.nextBoolean()
 fun generateMap(): World {
 
     val player = Entity(Vec2(7, 7), CritterType.KNIGHT, PlayerAI(), player = true, blocks = true, stabber = true)
-    val map = Matrix2d(64, 64) { x, y -> TileType.DIRT }
-    val decor = Matrix2d<Decor?>(map.getSize()) { x, y -> null }
+    val map = Matrix2d(64, 64) { _, _ -> TileType.DIRT }
+    val decor = Matrix2d<Decor?>(map.getSize()) { _, _ -> null }
 
     val roomCenters = mutableListOf<Vec2>()
     val entities = mutableListOf(player)
@@ -203,7 +203,7 @@ fun digRoom(mapLevel: Matrix2d<TileType>, sourceType: TileType, destinationType:
         }
         for (x in xMin until xMax) {
             for (y in yMin until yMax) {
-                val hori = min(x - xMin, xMax - x - 1) % hSpacing == 1;
+                val hori = min(x - xMin, xMax - x - 1) % hSpacing == 1
                 val vert = min(y - yMin, yMax - y - 1) % vSpacing == 1
 
                 mapLevel[x, y] = if (pillarsOnWalls && vert && hori) column else destinationType

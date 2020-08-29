@@ -3,9 +3,9 @@ package math
 import kotlin.math.abs
 
 
-fun los(x1: Int, y1: Int, x2: Int, y2: Int, evaluator2d: (x: Int, y: Int) -> Boolean): Boolean {
-    var x1 = x1
-    var y1 = y1
+fun los(x1i: Int, y1i: Int, x2: Int, y2: Int, evaluator2d: (x: Int, y: Int) -> Boolean): Boolean {
+    var x1 = x1i
+    var y1 = y1i
     val dx = abs(x2 - x1)
     val dy = abs(y2 - y1)
 

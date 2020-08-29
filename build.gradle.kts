@@ -18,5 +18,5 @@ buildscript {
 apply<KorgeGradlePlugin>()
 
 korge {
-	id = "com.sample.demo"
+	id = "com.stewsters.dungeon"
 }
